@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIME CRYSTAL // Quantum Symmetry & Qualia Dynamics</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #02040a;
+            color: #38bdf8;
+        }
+
+        #webgl-canvas {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .hud-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(8, 14, 28, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(16px);
+            padding: 20px;
+            border-radius: 14px;
+            width: 340px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            font-size: 1.05rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            color: #fff;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            background: #0b1329;
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #0284c7, #6366f1);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .info-card {
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: #cbd5e1;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #38bdf8;
+            margin-top: 12px;
+        }
+
+        .metric {
+            font-weight: bold;
+            color: #4ade80;
+        }
+    </style>
+
+    <!-- Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <div class="hud-panel">
+        <h1><span>⚛️</span> TIME CRYSTAL & QUALIA</h1>
+
+        <div class="control-group">
+            <label for="drivingFreq">Floquet Drive Frequency ($\Omega$):</label>
+            <input type="range" id="drivingFreq" min="0.5" max="4.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label for="couplingStrength">Quantum Spin Coupling ($J$):</label>
+            <input type="range" id="couplingStrength" min="0.1" max="3.0" step="0.1" value="1.5">
+        </div>
+
+        <div class="control-group">
+            <label for="qualiaMapping">Perceptual Qualia Mode:</label>
+            <select id="qualiaMapping">
+                <option value="chromatic">Subharmonic Color Shift ($2T$ Periodicity)</option>
+                <option value="entropy">Phenomenological Entropy Field</option>
+                <option value="coherence">Subtle Conscious Coherence</option>
+            </select>
+        </div>
+
+        <button class="btn" onclick="applyQuantumPerturbation()">PULSE PERIODIC DRIVE</button>
+
+        <div class="info-card" id="infoText">
+            <strong>Discrete Time Crystal (DTC):</strong> System breaks continuous time translation symmetry. Subatomic spin oscillations repeat at <span class="metric">2x drive period</span> without thermalizing.
+        </div>
+    </div>
+
+    <script>
+        // --- 1. THREE.JS ENGINE SETUP ---
+        const canvas = document.getElementById('webgl-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x02040a, 0.035);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 4, 14);
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // --- 2. LIGHTING & CORE ---
+        const ambientLight = new THREE.AmbientLight(0x0f172a, 1.2);
+        scene.add(ambientLight);
+
+        const centerLight = new THREE.PointLight(0x38bdf8, 4, 25);
+        scene.add(centerLight);
+
+        // --- 3. QUANTUM SPIN LATTICE GEOMETRY ---
+        const latticeSize = 8;
+        const totalNodes = latticeSize * latticeSize * latticeSize;
+        const geometry = new THREE.BufferGeometry();
+
+        const positions = new Float32Array(totalNodes * 3);
+        const colors = new Float32Array(totalNodes * 3);
+        const spins = new Float32Array(totalNodes); // +1 (Spin Up), -1 (Spin Down)
+
+        let index = 0;
+        const spacing = 1.2;
+        const offset = ((latticeSize - 1) * spacing) / 2;
+
+        for (let x = 0; x < latticeSize; x++) {
+            for (let y = 0; y < latticeSize; y++) {
+                for (let z = 0; z < latticeSize; z++) {
+                    positions[index * 3] = x * spacing - offset;
+                    positions[index * 3 + 1] = y * spacing - offset;
+                    positions[index * 3 + 2] = z * spacing - offset;
+
+                    spins[index] = (Math.random() > 0.5) ? 1 : -1;
+
+                    // Initial Blue Glow
+                    colors[index * 3] = 0.2;
+                    colors[index * 3 + 1] = 0.7;
+                    colors[index * 3 + 2] = 1.0;
+
+                    index++;
+                }
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.22,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.9,
+            blending: THREE.AdditiveBlending
+        });
+
+        const crystalMesh = new THREE.Points(geometry, material);
+        scene.add(crystalMesh);
+
+        // --- 4. FLOQUET DRIVE & PERTURBATION LOGIC ---
+        let drivePhase = 0;
+        let pulseEnergy = 0;
+
+        function applyQuantumPerturbation() {
+            pulseEnergy = 3.0;
+            // Flip 50% of spins to simulate a periodic drive pulse (Pi-pulse)
+            for (let i = 0; i < totalNodes; i++) {
+                if (Math.random() < 0.8) spins[i] *= -1;
+            }
+        }
+
+        // --- 5. TIME EVOLUTION & QUALIA RENDER LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+            const driveFreq = parseFloat(document.getElementById('drivingFreq').value);
+            const coupling = parseFloat(document.getElementById('couplingStrength').value);
+            const qualiaMode = document.getElementById('qualiaMapping').value;
+
+            drivePhase += 0.02 * driveFreq;
+            // Subharmonic Oscillation (Time Crystal flips spin at 0.5x driving frequency)
+            const subharmonicPhase = Math.sin(drivePhase * 0.5 * coupling);
+
+            const colorAttr = geometry.attributes.color;
+
+            for (let i = 0; i < totalNodes; i++) {
+                let s = spins[i];
+                let spinState = s * subharmonicPhase;
+
+                if (qualiaMode === 'chromatic') {
+                    // Map subharmonic phase to visual hue spectrum (Qualia of time flow)
+                    colorAttr.setXYZ(
+                        i,
+                        Math.abs(Math.sin(spinState + elapsedTime)),
+                        Math.abs(Math.cos(spinState * 0.5)),
+                        Math.abs(Math.sin(spinState * 0.3 + 1.5))
+                    );
+                } else if (qualiaMode === 'entropy') {
+                    // Phenomenological Chaos vs Order
+                    let val = (spinState + 1) * 0.5;
+                    colorAttr.setXYZ(i, val, 0.2, 1.0 - val);
+                } else if (qualiaMode === 'coherence') {
+                    // Deep Purple/Gold Quantum Mind Coherence
+                    colorAttr.setXYZ(i, 0.6 + spinState * 0.4, 0.2, 0.8);
+                }
+            }
+
+            colorAttr.needsUpdate = true;
+
+            // Rotate Crystal Core
+            crystalMesh.rotation.y = elapsedTime * 0.15;
+            crystalMesh.rotation.x = Math.sin(elapsedTime * 0.1) * 0.2;
+
+            // Dissipate Drive Pulse Energy
+            if (pulseEnergy > 0) pulseEnergy -= 0.05;
+            centerLight.intensity = 2.0 + Math.sin(subharmonicPhase * Math.PI) * 2.0 + pulseEnergy;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+  </html>
+  
